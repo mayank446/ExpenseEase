@@ -1,36 +1,46 @@
-const express = require('express')
-const app = express()
-const port = 3000
+const express = require("express");
+const app = express();
+const port = 8000;
 
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient()
+const { PrismaClient } = require("@prisma/client");
+const prisma = new PrismaClient();
 // const prisma = require("./prisma");
 
+app.use(express.json());
 
-app.post('/create-user', async(req, res) => {
+const routes = require("./routes");
+
+app.get("/", (req, res) => {
+  res.send("status : success");
+});
+
+for (const route in routes) {
+  app.use(`/${route}`, routes[route]);
+}
+
+app.post("/create-user", async (req, res) => {
   await prisma.members.create({
-    data:{
+    data: {
       name: "meek",
       // lent: [],
       // borrowed: [],
       // groups: []
-    }
-  })
-  res.send("user created")
-})
+    },
+  });
+  res.send("user created");
+});
 
-app.post('/create-group', async(req, res) => {
+app.post("/create-group", async (req, res) => {
   await prisma.groups.create({
-    data:{
+    data: {
       id: 2,
       groupname: "Hawai",
-    }
-  })
-  res.send("creating...")
-})
+    },
+  });
+  res.send("creating...");
+});
 
-
-app.post('/createTransaction', async (req, res) => {
+app.post("/createTransaction", async (req, res) => {
   const { lenderId, borrowerId, amount, groupId } = req.body;
 
   try {
@@ -41,7 +51,7 @@ app.post('/createTransaction', async (req, res) => {
 
     // Check if the group exists
     const group = await prisma.groups.findUnique({
-      where: { id: groupId }
+      where: { id: groupId },
     });
     if (!group) {
       return res.status(404).send("Group not found");
@@ -49,10 +59,10 @@ app.post('/createTransaction', async (req, res) => {
 
     // Check if the lender and borrower exist
     const lender = await prisma.user.findUnique({
-      where: { id: lenderId }
+      where: { id: lenderId },
     });
     const borrower = await prisma.user.findUnique({
-      where: { id: borrowerId }
+      where: { id: borrowerId },
     });
     if (!lender || !borrower) {
       return res.status(404).send("Lender or Borrower not found");
@@ -64,8 +74,8 @@ app.post('/createTransaction', async (req, res) => {
         lenderId: lenderId,
         borrowerId: borrowerId,
         amount: amount,
-        groupId: groupId
-      }
+        groupId: groupId,
+      },
     });
 
     res.status(201).json(transaction); // Respond with the created transaction
@@ -75,7 +85,6 @@ app.post('/createTransaction', async (req, res) => {
   }
 });
 
-
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+  console.log(`Example app listening on port ${port}`);
+});

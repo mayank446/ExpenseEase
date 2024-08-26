@@ -15,27 +15,30 @@ datasource db {
 
 model Members{
   id        Int       @id @default(autoincrement())
-  name      String
-  email     String?
+  name      String   @unique
+  email     String?   @unique
+  password  String 
   lent      Transactions[] @relation("lender")
   borrowed  Transactions[] @relation("borrower")
   groups    Groups[]       @relation("userGroups")
+  // uuid      String?  @unique @default(uuid())
 }
 
 model Groups {
   id             Int            @id @default(autoincrement())
   groupname      String
+  member         Members        @relation("userGroups", fields: [memberId], references: [id])
+  memberId       Int
   transactions   Transactions[] @relation("groupTransactions")
-  members        Members[]      @relation("userGroups")
 }
 
 model Transactions{
-  id        Int        @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   lender      Members    @relation("lender", fields:[lenderId], references:[id])
   lenderId    Int
-  borrower        Members    @relation("borrower", fields: [borrowerId], references: [id])
-  borrowerId      Int
-  amount    Int
-  group     Groups     @relation("groupTransactions", fields: [groupId], references: [id])
-  groupId   Int
+  borrower    Members    @relation("borrower", fields: [borrowerId], references: [id])
+  borrowerId  Int
+  amount      Int
+  group       Groups     @relation("groupTransactions", fields: [groupId], references: [id])
+  groupId     Int
 }
