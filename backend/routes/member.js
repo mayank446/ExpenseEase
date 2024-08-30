@@ -22,26 +22,30 @@ router.post(
     validator.body("password", "password is required").exists(),
     validator.body("email", "email is required").exists().isEmail(),
   ],
-  (req, res) => {
+  async (req, res) => {
     const { name, password, email } = req.body;
-    const user = prisma.members
-      .create({
-        data: {
-          name: name,
-          password: password,
+    try {
+      let user = await prisma.members.findUnique({
+        where: {
           email: email,
         },
-      })
-      .then((user) => {
-        return res.status(200).send({
-          message: "User created",
-          ...generateTokenResponse({ id: user.id }),
-        });
-      })
-      .catch((error) => {
-        console.log(error);
-        return res.status(400).send("User already exists");
       });
+
+      if (!user) {
+        user = await prisma.members.create({
+          data: {
+            name: name,
+            password: password,
+            email: email,
+          },
+        });
+      }
+      const token = generateTokenResponse({ id: user.id, email: user.email });
+      return res.status(200).send(token);
+    } catch (error) {
+      console.log(error);
+      return res.status(400).send("User already exists");
+    }
   }
 );
 

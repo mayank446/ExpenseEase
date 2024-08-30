@@ -12,25 +12,23 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
-model Members{
+model Members {
   id        Int       @id @default(autoincrement())
-  name      String   @unique
+  name      String    @unique
   email     String?   @unique
-  password  String 
+  password  String
   lent      Transactions[] @relation("lender")
   borrowed  Transactions[] @relation("borrower")
-  groups    Groups[]       @relation("userGroups")
-  // uuid      String?  @unique @default(uuid())
+  groups    Groups[] @relation("MemberGroups")
 }
 
 model Groups {
   id             Int            @id @default(autoincrement())
   groupname      String
-  member         Members        @relation("userGroups", fields: [memberId], references: [id])
-  memberId       Int
+  members        Members[]      @relation("MemberGroups")
   transactions   Transactions[] @relation("groupTransactions")
 }
+
 
 model Transactions{
   id          Int        @id @default(autoincrement())

@@ -1,11 +1,14 @@
 const express = require("express");
 const app = express();
 const port = 8000;
+const morgan = require("morgan");
 
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 // const prisma = require("./prisma");
 
+app.use(morgan("tiny"));
+// app.use(morgan());
 app.use(express.json());
 
 const routes = require("./routes");
