@@ -27,6 +27,7 @@ module.exports = async (req, res, next) => {
       return res.status(401).send("Unauthorized");
     }
     req.user = user;
+    console.log("user : ", req.user);
     next();
   } catch (error) {
     console.log(error);

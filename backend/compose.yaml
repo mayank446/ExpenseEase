@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  # Node.js app
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      NODE_ENV: development
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: splitwise
+      POSTGRES_HOST: chad
+    depends_on:
+      - chad
+
+  # PostgreSQL database
+  chad:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: splitwise
+    ports:
+      - "5431:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

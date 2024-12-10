@@ -118,24 +118,26 @@ router.post(
   [
     validator.header("authorization").exists(),
     validator.body("list", "list is required").exists(),
-    validator.body("name", "name is required").exists(),
+    // validator.body("name", "name is required").exists(),
     validator.body("groupId", "groupId is required").exists(),
   ],
   auth,
   async (req, res) => {
     try {
-      const { list, groupId, name } = req.body;
-      const user = await prisma.members.findUnique({
-        where: {
-          name,
-        },
-      });
-      if (!user) return res.status(400).send("Name not found");
+      const { list, groupId } = req.body;
+      // const user = await prisma.members.findUnique({
+      //   where: {
+      //     name,
+      //   },
+      // });
+      console.log("list : ", list);
+      // if (!user) return res.status(400).send("Name not found");
+      // console.log(list);
       const transactions = list.map((item) => {
         return {
-          lenderId: parseInt(user.id),
+          lenderId: parseInt(req.user.id),
           borrowerId: parseInt(item.id),
-          amount: parseInt(item.amount),
+          amount: parseInt(item.input),
           groupId: parseInt(groupId),
         };
       });
@@ -143,7 +145,6 @@ router.post(
       const previousTransactions = await prisma.transactions.findMany({
         where: {
           groupId: parseInt(groupId),
-          status: "pending",
         },
       });
       // check if any transaction is already present then (do plus or minus) in the amount or create new transaction

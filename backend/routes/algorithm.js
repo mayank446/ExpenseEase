@@ -2,6 +2,7 @@ const { Router } = require("express");
 const validator = require("express-validator");
 const prisma = require("../prisma");
 const auth = require("../middleware/auth");
+const finalAlgo = require("../controller/algo");
 
 const router = Router();
 
@@ -14,12 +15,13 @@ router.post(
   auth,
   async (req, res) => {
     const { groupId } = req.params;
+    console.log(groupId);
     try {
       // pending transactions of a group
-      const transactions = await prisma.transactions.findMany({
+      let transactions = await prisma.transactions.findMany({
         where: {
           groupId: parseInt(groupId),
-          status: "pending",
+          // status: "pending",
         },
         select: {
           id: true,
@@ -28,9 +30,32 @@ router.post(
           borrowerId: true,
         },
       });
-      // perform the logic here
+      transactions = transactions.map((t) => [
+        t.lenderId,
+        t.borrowerId,
+        t.amount,
+      ]);
+      console.log(transactions);
+      // // perform the logic here
+      transactions = finalAlgo(transactions);
 
-      // then insert the updated transactions in the database
+      console.log("transactions : ", transactions);
+
+      // // then insert the updated transactions in the database
+      await prisma.transactions.deleteMany({
+        where: {
+          groupId: parseInt(groupId),
+        },
+      });
+      await prisma.transactions.createMany({
+        data: transactions.map((t) => ({
+          groupId: parseInt(groupId),
+          lenderId: t[0],
+          borrowerId: t[1],
+          amount: t[2],
+        })),
+      });
+
       return res.status(200).send(transactions);
     } catch (error) {
       console.log(error);
@@ -38,3 +63,5 @@ router.post(
     }
   }
 );
+
+module.exports = router;
